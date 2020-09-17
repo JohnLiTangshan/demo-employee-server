@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Environment to deploy resources to
+    Default: staging
+    AllowedValues:
+      - staging
+      - production
+
+Conditions:
+  IsProduction: !Equals [ !Ref Environment, production ]
+
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    MemorySize: 128
+    Timeout: 5
+
+Resources:
+  EmployeeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'employee-${Environment}'
+      CodeUri: ./src/employees/
+      Handler: index.handler
+      AutoPublishAlias: !Ref Environment
+      DeploymentPreference:
+        Type: !If [IsProduction, Canary10Percent5Minutes, AllAtOnce]
+        Enabled: true
+        Alarms:
+          - !Ref AliasErrorMetricGreaterThanZeroAlarm    
+      Events:
+        Base:
+          Type: Api
+          Properties:
+            Method: any
+            Path: /
+            RestApiId: !Ref Api
+        Others:
+          Type: Api
+          Properties:
+            Method: any
+            Path: /{proxy+}
+            RestApiId: !Ref Api
+
+      Environment:
+        Variables:
+          TABLE: !Ref EmployeeTable
+      Tags:
+        project: my-project
+        environment: !Ref Environment
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EmployeeTable
+            
+  Api:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      BinaryMediaTypes:
+        - "*~1*"
+      DefinitionBody:
+        info:
+          title: !Ref "AWS::StackName"
+          version: "1.0"
+        openapi: "3.0"
+        paths:
+          /:
+            x-amazon-apigateway-any-method:
+              responses:
+                {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EmployeeFunction.Arn}/invocations"
+          /{proxy+}:
+            x-amazon-apigateway-any-method:
+              responses:
+                {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EmployeeFunction.Arn}/invocations"
+      StageName: Prod
+
+  EmployeeTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: email
+        Type: String
+      TableName: !Sub 'employees-${Environment}'
+      Tags:
+        project: my-project
+        environment: !Ref Environment
+      SSESpecification:
+        SSEEnabled: true
+
+  AliasErrorMetricGreaterThanZeroAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Lambda Function Error > 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Resource
+          Value: !Sub '${EmployeeFunction}:${Environment}'
+        - Name: FunctionName
+          Value: !Ref EmployeeFunction
+      EvaluationPeriods: 2
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 0
+
+Outputs:
+
+  EmployeeFunctionArn:
+    Description: "Employees function ARN"
+    Value: !GetAtt EmployeeFunction.Arn
+  EmployeeFunctionIamRole:
+    Description: "IAM Role for employees function"
+    Value: !GetAtt EmployeeFunctionRole.Arn
+  EmployeeTable:
+    Description: DynamoDB table where employees are stored
+    Value: !Ref EmployeeTable
+
