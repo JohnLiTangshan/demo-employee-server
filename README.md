@@ -8,7 +8,6 @@ For CI/CD it assumes there are two environments: staging and production.
 
 Application is responsible for CRUD employee information. It stores data in DynamoDB table through Lambda functions.
 
-![Architecture](images/architecture.png)
 
 ## Requirements
 
@@ -39,6 +38,7 @@ Packaging and deploying the app to AWS is relatively straight forward since all 
   
   ```sh
   sam package --s3-bucket my-artifacts-bucket --s3-prefix my-prefix --output-template-file out.yml
+  sam package --s3-bucket john-tool-tokyo --s3-prefix employee-server-deploy --output-template-file out.yml
   ```
 
 * Deploy a new version of your app using the artifacts the command above just generated (using staging as the target environment for demo purposes):
@@ -134,7 +134,7 @@ NOTES:
 * Aforementioned buckets are created by our CDK script and hence, they cannot exist before running it.
 * To successfully connect to Github:
   * Username is provided through a AWS SSM parameter called `github_username`,
-  * Secret is provided through AWS Secrets Manager. Both secret name and field are called `github_token`.
+  * Secret is provided through AWS Secrets Manager. Both secret name and field are called `githubToken`.
 
 
 ## License

@@ -30,6 +30,8 @@ Resources:
       DeploymentPreference:
         Type: !If [IsProduction, Canary10Percent5Minutes, AllAtOnce]
         Enabled: true
+        Hooks:
+          PreTraffic: !Ref PreTrafficCheckFunction     
         Alarms:
           - !Ref AliasErrorMetricGreaterThanZeroAlarm    
       Events:
@@ -155,4 +157,12 @@ Outputs:
   EmployeeTable:
     Description: DynamoDB table where employees are stored
     Value: !Ref EmployeeTable
-
+  PreTrafficCheckFunctionIamRole:
+    Description: "IAM Role for Put Book Pre Traffic Check function"
+    Value: !GetAtt PreTrafficCheckFunctionRole.Arn
+  PreTrafficCheckFunctionArn:
+    Description: "Pre Traffic check function function ARN"
+    Value: !GetAtt PreTrafficCheckFunction.Arn
+  ProdDataEndpoint:
+    Description: "API Prod stage endpoint"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
