@@ -27,7 +27,7 @@ Resources:
       CodeUri: ./src/employees/
       Handler: index.handler
       AutoPublishAlias: !Ref Environment
-      AutoPublishCodeSha256: 1
+      AutoPublishCodeSha256: 'deploy1'
       DeploymentPreference:
         Type: !If [IsProduction, Canary10Percent5Minutes, AllAtOnce]
         Enabled: true
