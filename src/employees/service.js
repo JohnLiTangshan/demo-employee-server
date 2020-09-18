@@ -1,7 +1,8 @@
 const sdk = require('aws-sdk');
 
 const ddbOptions = {
-    apiVersion: '2012-08-10'
+    apiVersion: '2012-08-10',
+    region: 'ap-northeast-1'
 };
 
 if (process.env.AWS_SAM_LOCAL) {
@@ -16,10 +17,14 @@ const client = new sdk.DynamoDB(ddbOptions);
 
 
 
-//const tableName = process.env.TABLE;
-const tableName = 'employees';
+const tableName = process.env.TABLE;
 
-
+/**
+ * Build result returned to client
+ * @param {*} isSuccess true: the action is success. false: the action is failed
+ * @param {*} result The result
+ * @param {*} errorMessage The error message if the action is failed
+ */
 function buildResult(isSuccess, result, errorMessage) {
     return {
         isSuccess,
@@ -29,7 +34,10 @@ function buildResult(isSuccess, result, errorMessage) {
 }
 
 
-
+/**
+ * Add the employee to Dynamodb table
+ * @param {*} employee 
+ */
 async function addEmployee(employee) {
     const params = {
         TableName: tableName,
@@ -54,8 +62,13 @@ async function addEmployee(employee) {
             }
         });
     });
+
     return result;
 }
+
+/**
+ * Get all employees from dynamodb table.
+ */
 async function getEmployees() {
     const params = {
         TableName: tableName
@@ -64,9 +77,8 @@ async function getEmployees() {
         client.scan(params, (err, data) => {
             if(err) {
                 console.error("Unable to get employees from table. Error JSON: ", JSON.stringify(err, null, 2));
-                resolve(buildResult(false, '', 'Fail to get employees'));
+                resolve(buildResult(false, [], 'Fail to get employees'));
             } else {
-                console.log(data);
                 const employees = data.Items.map(e => {
                     return {
                         email: e.email.S,
@@ -85,6 +97,11 @@ async function getEmployees() {
     return result;
 }
 
+/**
+ * Use the given email to find the employee from dynamodb table
+ * 
+ * @param {} email 
+ */
 async function getEmployee(email) {
     const params = {
         TableName: tableName,
@@ -120,10 +137,19 @@ async function getEmployee(email) {
 
     return result;
 }
+/**
+ * Update the given employee data in dynamodb table.
+ * 
+ * @param {*} employee 
+ */
 async function updateEmployee(employee) {
     return await addEmployee(employee);
 }
 
+/**
+ * Delete the employee with the email in the dynamodb table.
+ * @param {*} email 
+ */
 async function deleteEmployee(email) {
     const params = {
         TableName: tableName,
@@ -145,6 +171,7 @@ async function deleteEmployee(email) {
     });
     return result;
 }
+
 module.exports = {
     addEmployee,
     getEmployees,

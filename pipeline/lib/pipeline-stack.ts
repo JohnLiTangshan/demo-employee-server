@@ -29,7 +29,7 @@ export class PipelineStack extends cdk.Stack {
     const sourceAction: GitHubSourceAction = new codepipeline_actions.GitHubSourceAction({
       actionName: 'Source',
       owner: ssm.StringParameter.fromStringParameterName(this, 'GithubUsername', 'github_username').stringValue,
-      repo: 'aws-serverless-app-sam-cdk',
+      repo: 'demo-employee-server',
       oauthToken: cdk.SecretValue.secretsManager('github_token', {jsonField: 'github_token'}),
       output: sourceArtifacts,
       branch: 'master',

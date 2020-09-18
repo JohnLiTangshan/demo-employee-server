@@ -1,7 +1,7 @@
 {
-  "name": "aws-serverless-app-put-book-pre-traffic-check",
+  "name": "aws-serverless-app-employee-service-pre-traffic-check",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "Amazon Web Services",
+  "author": "John",
   "license": "Apache 2.0"
 }

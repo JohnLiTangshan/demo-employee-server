@@ -56,6 +56,35 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref EmployeeTable
             
+  PreTrafficCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'CodeDeployHook_employee-${Environment}-pre-traffic-check'
+      CodeUri: ./src/pre-traffic-check/
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE: !Ref EmployeeTable
+          FN_NEW_VERSION: !Ref EmployeeFunction.Version
+      Tags:
+        project: my-project
+        environment: !Ref Environment
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EmployeeTable
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - codedeploy:PutLifecycleEventHookExecutionStatus
+            Resource:
+              !Sub 'arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ServerlessDeploymentApplication}/*'
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: !Ref EmployeeFunction.Version  
   Api:
     Type: "AWS::Serverless::Api"
     Properties:

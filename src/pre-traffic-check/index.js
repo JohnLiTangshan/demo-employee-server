@@ -16,18 +16,17 @@ exports.handler = async event => {
         const functionToTest = process.env.FN_NEW_VERSION;
         console.log('Testing new function version: ' + functionToTest);
     
-        const book = {isbn: '1-111-111-111', title:'Test', year: '111', author: 'Test', review: 1};
-        const sqsEvent = {Records:[{body: JSON.stringify(book)}]};
+        const event = require('./addEmployee-event.json');
         const lParams = {
             FunctionName: functionToTest,
-            InvocationType: 'Event',
-            Payload: JSON.stringify(sqsEvent)
+            InvocationType: 'RequestResponse',
+            Payload: JSON.stringify(event)
         };
         await lambdaClient.invoke(lParams).promise();
         
         const ddbParams = {
             TableName: tableName,
-            Key: {isbn: {S: book.isbn}},
+            Key: {email: {S: 'test@test.com'}},
             ConsistentRead: true
         };
 
@@ -37,7 +36,7 @@ exports.handler = async event => {
         console.log('DynamoDB item', JSON.stringify(Item, null, 2));
 
         if (!Item) {
-            throw new Error('Test book not inserted in DynamoDB');
+            throw new Error('Test employee not inserted in DynamoDB');
         }
 
         delete ddbParams.ConsistentRead;
