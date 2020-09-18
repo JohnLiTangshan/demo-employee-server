@@ -86,7 +86,17 @@ Resources:
           - Effect: Allow
             Action:
               - lambda:InvokeFunction
-            Resource: !Ref EmployeeFunction.Version  
+            Resource: !Ref EmployeeFunction.Version
+
+  ConfigLambdaPermission:
+      Type: "AWS::Lambda::Permission"
+      DependsOn:
+      - Api
+      - EmployeeFunction
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref EmployeeFunction
+        Principal: apigateway.amazonaws.com 
   Api:
     Type: "AWS::Serverless::Api"
     Properties:
