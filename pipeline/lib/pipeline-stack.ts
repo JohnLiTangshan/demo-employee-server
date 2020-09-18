@@ -30,7 +30,7 @@ export class PipelineStack extends cdk.Stack {
       actionName: 'Source',
       owner: ssm.StringParameter.fromStringParameterName(this, 'GithubUsername', 'github_username').stringValue,
       repo: 'demo-employee-server',
-      oauthToken: cdk.SecretValue.secretsManager('github_token', {jsonField: 'github_token'}),
+      oauthToken: cdk.SecretValue.secretsManager('githubToken'),
       output: sourceArtifacts,
       branch: 'master',
       trigger: codepipeline_actions.GitHubTrigger.WEBHOOK,
@@ -75,7 +75,7 @@ export class PipelineStack extends cdk.Stack {
       actionName: 'Test',
       input: sourceArtifacts,
       environmentVariables: {
-        TABLE: {value: 'books'},
+        TABLE: {value: 'employees'},
         E2E_TEST: {value: 'true'}
       },
       project: testProject
@@ -92,7 +92,7 @@ export class PipelineStack extends cdk.Stack {
 
     appArtifactBucket.grantRead(deployProject);
     deployProject.role?.addManagedPolicy({managedPolicyArn: 'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess'});
-    deployProject.role?.addManagedPolicy({managedPolicyArn: 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'});
+    
     deployProject.role?.addManagedPolicy({managedPolicyArn: 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'});
     deployProject.role?.addManagedPolicy({managedPolicyArn: 'arn:aws:iam::aws:policy/AWSLambdaFullAccess'});
     deployProject.role?.addManagedPolicy({managedPolicyArn: 'arn:aws:iam::aws:policy/IAMFullAccess'});
