@@ -6,21 +6,24 @@ const ddbClient = new sdk.DynamoDB({apiVersion: '2012-08-10'});
 
 const tableName = process.env.TABLE;
 
-exports.handler = async event => {
+
+
+exports.handler = async (event, context) => {
     let status = 'Succeeded';
     try {
         console.log('Entering PreTraffic Hook!');
 
+        
         console.log('CodeDeploy event', event);
 	
         const functionToTest = process.env.FN_NEW_VERSION;
         console.log('Testing new function version: ' + functionToTest);
     
-        const event = require('./addEmployee-event.json');
+        const addEvent = require('./addEmployee-event.json');
         const lParams = {
             FunctionName: functionToTest,
             InvocationType: 'RequestResponse',
-            Payload: JSON.stringify(event)
+            Payload: JSON.stringify(addEvent)
         };
         await lambdaClient.invoke(lParams).promise();
         
