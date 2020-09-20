@@ -1,12 +1,14 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const serverless = require('serverless-http');
 const employeeService = require('./service');
 const app = express();
 
 app.use(bodyParser.json());
-
+app.use(cors());
+app.options('*', cors());
 app.post('/employees', async (req, res) => {
 
     res.json(await employeeService.addEmployee(req.body))
