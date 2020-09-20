@@ -1,8 +1,8 @@
 {
     "body": "eyJ0ZXN0IjoiYm9keSJ9",
     "resource": "/{proxy+}",
-    "path": "/path/to/resource",
-    "httpMethod": "POST",
+    "path": "/api/employees",
+    "httpMethod": "GET",
     "isBase64Encoded": true,
     "queryStringParameters": {
       "foo": "bar"
@@ -114,9 +114,9 @@
           "userAgent": "Custom User Agent String",
           "user": null
         },
-        "path": "/prod/path/to/resource",
+        "path": "/api/employees",
         "resourcePath": "/{proxy+}",
-        "httpMethod": "POST",
+        "httpMethod": "GET",
         "apiId": "1234567890",
         "protocol": "HTTP/1.1"
       }

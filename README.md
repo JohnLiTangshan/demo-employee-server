@@ -1,6 +1,10 @@
 # Demo code for employee server
 
-This repository contains a simple application that gets defined and provisioned using AWS SAM.
+## Application code
+application code is in src/employees folder, it's a AWS lambda function that it will handle employees CRUD functions.
+
+## Pipeline code
+pipeline is defined by AWS CDK, it's in pipeline folder.
 
 For CI/CD it assumes there are two environments: staging and production.
 
@@ -23,12 +27,12 @@ AWS SAM template is defined in the root directory through a YAML file. It define
 * An input `Parameter` that specifies to which environment we are going to be deploying to
 * A `Condition` that based on the parameter above determines if this is a deployment to production or not. This is needed as different resources and configurations will be used based on the environment.
 * `Global` section to define those parameters that are common to multiple resources in the template.
-* Lambda function called `PutBookFunction` which is responsible for taking messages off the queue and storing them into DynamoDB. This component is the core of the application and hence, it is formed by the following configuration:
-  * IAM Policies so it can receive messages from SQS and write them into DynamoDB table.
+* Lambda function called `EmployeeFunction` which is responsible for CRUD employee data with DynamoDB table. This component is the core of the application and hence, it is formed by the following configuration:
+  * IAM Policies so it can read / write data into DynamoDB table.
   * For staging, new versions are deployed to an alias named after the environment with a bluen/green approach.
   * For production, we use a more conservative approach that allows us to gradually shift traffic towards the new version. During the time this deployment lasts, a CloudWatch alarm (`AliasErrorMetricGreaterThanZeroAlarm`) is monitored so in case it throws errors, a rollback to the previous version is performed.
   * Lastly, deployments to both environments perform a check (or smoke test) for the new version before shifting traffic to it through a lambda function (`PreTrafficCheckFunction`). If it fails, traffic is not routed to the new version and deployment is considered failed.
-* Aforementioned DynamoDB table: `Books`.
+* Aforementioned DynamoDB table: `employees`.
 
 ## Using SAM to deploy the app
 
@@ -76,13 +80,13 @@ Check previous step ran successfully:
 
 ```sh
 aws dynamodb list-tables --endpoint-url http://localhost:8000
-aws dynamodb describe-table --table-name books --endpoint-url http://localhost:8000
+aws dynamodb describe-table --table-name employees --endpoint-url http://localhost:8000
 ```
 
-Finally, test your function with a dummy event (that can be generated with `sam local generate-event sqs receive-message`):
+Finally, test your function with a dummy event (that can be generated with `sam local generate-event apigateway aws-proxy`):
 
 ```sh
-TABLE=employees sam local invoke "EmployeeFunction" -e events/event1.json  --docker-network my-network
+TABLE=employees sam local invoke "EmployeeFunction" -e events/event.json  --docker-network my-network
 ```
 
 Notice that our lambda function will point to the local DynamoDB container for the command above through its HTTP layer. Condition is based on `AWS_SAM_LOCAL` which automatically gets set by `sam` when executing `local` commands.
