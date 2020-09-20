@@ -12,6 +12,8 @@ For CI/CD it assumes there are two environments: staging and production.
 
 Application is responsible for CRUD employee information. It stores data in DynamoDB table through Lambda functions.
 
+## Pipeline
+![Pipeline](images/pipeline.png)
 
 ## Requirements
 
