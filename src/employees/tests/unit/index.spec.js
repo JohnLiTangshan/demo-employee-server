@@ -39,7 +39,8 @@ describe('Employee service index', () => {
                     post: postStub,
                     get: getStub,
                     put: putStub,
-                    delete: deleteStub
+                    delete: deleteStub,
+                    options: sandbox.stub()
                 }
             },
             './service': employeeService,
@@ -48,7 +49,7 @@ describe('Employee service index', () => {
 
     it('should register methods', () => {
        
-        expect(useStub).to.have.been.calledOnce;
+        expect(useStub).to.have.been.called;
         expect(postStub).to.have.been.calledWith('/employees', sandbox.match.any);
         expect(getStub).to.have.been.calledWith('/employees/:email', sandbox.match.any);
         expect(getStub).to.have.been.calledWith('/employees', sandbox.match.any);
